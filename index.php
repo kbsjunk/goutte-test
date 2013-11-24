@@ -7,6 +7,7 @@ require 'vendor/autoload.php';
 require 'functions.php';
 
 use Goutte\Client;
+use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
 $client = new Client();
@@ -35,12 +36,18 @@ $ev = new \EurovisionEvent();
 
 $crawler = $client->request('GET', 'http://www.eurovision.tv/page/history/by-year/contest?event=1543');//273
 
+$ev->contest = $crawler->filter('.cb-EventInfo-story h1')->text();
+
 $details = $crawler->filter('.cb-EventInfo-facts .detail-list')->filter('h3')->each(function (Crawler $node, $i) {
 
 	$key = trim($node->text());
 	$value = trim($node->nextAll()->first()->text());//filter('p.info, ul.qualifiers')->
 
 	switch ($key) {
+
+		case 'Date':
+		$value = new Carbon($value);
+		break;
 
 		case 'Location':
 		$value = \EurovisionCrawler::extract($value, 'location city country');
